@@ -33,9 +33,9 @@ const ToDoList = () => {
       </Flex>
       <Flex sx={{ flexDirection: 'column' }}>
         <ul sx={{ listStyleType: 'none' }}>
-          {todos.map((todo) => (
-            <Flex as="li">
-              <Checkbox checked={todo.done}></Checkbox>
+          {todos.map((todo, i) => (
+            <Flex as="li" key={i}>
+              <Checkbox checked={todo.done} readOnly></Checkbox>
               <span>{todo.value}</span>
             </Flex>
           ))}
