@@ -1,15 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext } from 'react'
 import { Container, Heading, Button, Flex, NavLink } from 'theme-ui'
 import { Link } from 'gatsby'
 import netlifyIdentity from 'netlify-identity-widget'
+import { IdentityContext } from '../../identity-context'
 
-export default (props) => {
-  const [user, setUser] = useState()
-  useEffect(() => {
-    netlifyIdentity.init({})
-    netlifyIdentity.on('login', (user) => setUser(user))
-    netlifyIdentity.on('logout', () => setUser())
-  }, [])
+export default () => {
+  const { user } = useContext(IdentityContext)
+
   return (
     <Container>
       <Flex as="nav">
@@ -29,12 +26,6 @@ export default (props) => {
         <Heading as="h1">Get Stuff Done</Heading>
         <Button sx={{ marginTop: 2 }} onClick={() => netlifyIdentity.open()}>
           Log In
-        </Button>
-        <Button
-          sx={{ marginTop: 2 }}
-          onClick={() => console.log(netlifyIdentity.currentUser())}
-        >
-          log user info
         </Button>
       </Flex>
     </Container>

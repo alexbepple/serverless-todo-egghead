@@ -1,10 +1,9 @@
-import React, { useEffect } from 'react'
+import React, { useContext } from 'react'
 import { Router } from '@reach/router'
-import netlifyIdentity from 'netlify-identity-widget'
+import { IdentityContext } from '../../identity-context'
 
 const Dash = () => {
-  useEffect(() => netlifyIdentity.init({}))
-  const user = netlifyIdentity.currentUser()
+  const { user } = useContext(IdentityContext)
   return <div>Dash hasUser: {user && user.user_metadata.full_name}</div>
 }
 
