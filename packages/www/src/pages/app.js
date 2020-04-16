@@ -1,9 +1,19 @@
-import React, { useContext, useRef, useState } from 'react'
+import React, { useContext, useRef, useReducer } from 'react'
 import { Container, Checkbox, Flex, Label, Input, Button } from 'theme-ui'
 import { IdentityContext } from '../../identity-context'
 
+const reduceTodos = (state, action) => {
+  switch (action.type) {
+    case 'addTodo':
+      const newTodo = { done: false, value: action.payload }
+      return [newTodo, ...state]
+    default:
+      throw new Error('Unknown action')
+  }
+}
+
 const ToDoList = () => {
-  const [todos, setTodos] = useState([])
+  const [todos, dispatch] = useReducer(reduceTodos, [])
   const inputRef = useRef()
   return (
     <Container>
@@ -11,8 +21,7 @@ const ToDoList = () => {
         as="form"
         onSubmit={(e) => {
           e.preventDefault()
-          const newTodo = { done: false, value: inputRef.current.value }
-          setTodos([newTodo, ...todos])
+          dispatch({ type: 'addTodo', payload: inputRef.current.value })
           inputRef.current.value = ''
         }}
       >
@@ -36,7 +45,7 @@ const ToDoList = () => {
   )
 }
 
-export default (props) => {
+export default () => {
   const { user } = useContext(IdentityContext)
   if (user) {
     return <ToDoList />
