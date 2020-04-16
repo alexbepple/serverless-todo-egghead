@@ -1,16 +1,44 @@
-import React, { useContext } from 'react'
-import { Router } from '@reach/router'
+import React, { useContext, useRef, useState } from 'react'
+import { Container, Checkbox, Flex, Label, Input, Button } from 'theme-ui'
 import { IdentityContext } from '../../identity-context'
 
-const Dash = () => {
-  const { user } = useContext(IdentityContext)
-  return <div>Dash hasUser: {user && user.user_metadata.full_name}</div>
+const ToDoList = () => {
+  const [todos, setTodos] = useState([])
+  const inputRef = useRef()
+  return (
+    <Container>
+      <Flex
+        as="form"
+        onSubmit={(e) => {
+          e.preventDefault()
+          const newTodo = { done: false, value: inputRef.current.value }
+          setTodos([newTodo, ...todos])
+        }}
+      >
+        <Label sx={{ display: 'flex' }}>
+          <span>Add todo</span>
+          <Input ref={inputRef} sx={{ marginLeft: 1 }}></Input>
+        </Label>
+        <Button sx={{ marginLeft: 1 }}>Add</Button>
+      </Flex>
+      <Flex sx={{ flexDirection: 'column' }}>
+        <ul sx={{ listStyleType: 'none' }}>
+          {todos.map((todo) => (
+            <Flex as="li">
+              <Checkbox checked={todo.done}></Checkbox>
+              <span>{todo.value}</span>
+            </Flex>
+          ))}
+        </ul>
+      </Flex>
+    </Container>
+  )
 }
 
 export default (props) => {
-  return (
-    <Router>
-      <Dash path="/app" />
-    </Router>
-  )
+  const { user } = useContext(IdentityContext)
+  if (user) {
+    return <ToDoList />
+  }
+  return <div>You need to log in.</div>
 }
