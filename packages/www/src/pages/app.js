@@ -13,6 +13,7 @@ const ToDoList = () => {
           e.preventDefault()
           const newTodo = { done: false, value: inputRef.current.value }
           setTodos([newTodo, ...todos])
+          inputRef.current.value = ''
         }}
       >
         <Label sx={{ display: 'flex' }}>
