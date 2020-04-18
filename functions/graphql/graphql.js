@@ -2,13 +2,37 @@ const { ApolloServer, gql } = require('apollo-server-lambda')
 
 const typeDefs = gql`
   type Query {
-    hello: String
+    todos: [Todo]!
+  }
+  type Todo {
+    id: ID!
+    text: String!
+    done: Boolean!
+  }
+  type Mutation {
+    addTodo(text: String!): Todo
+    toggleTodoDone(id: ID!): Todo
   }
 `
 
+const todoById = {}
+let todoIndex = 0
+
 const resolvers = {
   Query: {
-    hello: () => 'Moinsen!',
+    todos: () => Object.values(todoById),
+  },
+  Mutation: {
+    addTodo: (_, { text }) => {
+      todoIndex++
+      const id = `key-${todoIndex}`
+      todoById[id] = { id, text, done: false }
+      return todoById[id]
+    },
+    toggleTodoDone: (_, { id }) => {
+      todoById[id].done = !todoById[id].done
+      return todoById[id]
+    },
   },
 }
 
