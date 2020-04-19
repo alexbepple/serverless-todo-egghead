@@ -1,34 +1,46 @@
-import React, { useContext, useRef, useReducer } from 'react'
+import React, { useContext, useRef } from 'react'
 import { Container, Checkbox, Flex, Label, Input, Button } from 'theme-ui'
 import { IdentityContext } from '../../identity-context'
+import { gql, useMutation, useQuery } from '@apollo/client'
 
-const reduceTodos = (state, action) => {
-  switch (action.type) {
-    case 'addTodo':
-      const newTodo = { done: false, value: action.payload }
-      return [newTodo, ...state]
-    case 'toggleDone':
-      const newState = [...state]
-      newState[action.payload] = {
-        done: !state[action.payload].done,
-        value: state[action.payload].value,
-      }
-      return newState
-    default:
-      throw new Error('Unknown action')
+const ADD_TODO = gql`
+  mutation AddTodo($text: String!) {
+    addTodo(text: $text) {
+      id
+    }
   }
-}
+`
+const TOGGLE_TODO = gql`
+  mutation ToggleTodo($id: ID!) {
+    toggleTodoDone(id: $id) {
+      text
+      done
+    }
+  }
+`
+const GET_TODOS = gql`
+  query GetTodos {
+    todos {
+      id
+      text
+      done
+    }
+  }
+`
 
 const ToDoList = () => {
-  const [todos, dispatch] = useReducer(reduceTodos, [])
+  const [addTodo] = useMutation(ADD_TODO)
+  const [toggleTodo] = useMutation(TOGGLE_TODO)
+  const { loading, error, data } = useQuery(GET_TODOS)
   const inputRef = useRef()
+
   return (
     <Container>
       <Flex
         as="form"
         onSubmit={(e) => {
           e.preventDefault()
-          dispatch({ type: 'addTodo', payload: inputRef.current.value })
+          addTodo({ variables: { text: inputRef.current.value } })
           inputRef.current.value = ''
         }}
       >
@@ -40,16 +52,20 @@ const ToDoList = () => {
       </Flex>
       <Flex sx={{ flexDirection: 'column' }}>
         <ul sx={{ listStyleType: 'none' }}>
-          {todos.map((todo, i) => (
-            <Flex
-              as="li"
-              key={i}
-              onClick={(e) => dispatch({ type: 'toggleDone', payload: i })}
-            >
-              <Checkbox checked={todo.done}></Checkbox>
-              <span>{todo.value}</span>
-            </Flex>
-          ))}
+          {loading && <div>loading ...</div>}
+          {error && <div>{error.message}</div>}
+          {!loading &&
+            !error &&
+            data.todos.map((todo) => (
+              <Flex
+                as="li"
+                key={todo.id}
+                onClick={(e) => toggleTodo({ variables: { id: todo.id } })}
+              >
+                <Checkbox checked={todo.done}></Checkbox>
+                <span>{todo.text}</span>
+              </Flex>
+            ))}
         </ul>
       </Flex>
     </Container>
