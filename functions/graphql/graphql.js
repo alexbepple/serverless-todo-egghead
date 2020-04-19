@@ -22,7 +22,6 @@ let todoIndex = 0
 const resolvers = {
   Query: {
     todos: (parent, args, context) => {
-      console.log('query', { context })
       return Object.values(todoById)
     },
   },
