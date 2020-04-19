@@ -31,17 +31,18 @@ const GET_TODOS = gql`
 const ToDoList = () => {
   const [addTodo] = useMutation(ADD_TODO)
   const [toggleTodo] = useMutation(TOGGLE_TODO)
-  const { loading, error, data } = useQuery(GET_TODOS)
+  const { loading, error, data, refetch } = useQuery(GET_TODOS)
   const inputRef = useRef()
 
   return (
     <Container>
       <Flex
         as="form"
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault()
-          addTodo({ variables: { text: inputRef.current.value } })
+          await addTodo({ variables: { text: inputRef.current.value } })
           inputRef.current.value = ''
+          await refetch()
         }}
       >
         <Label sx={{ display: 'flex' }}>
@@ -60,7 +61,10 @@ const ToDoList = () => {
               <Flex
                 as="li"
                 key={todo.id}
-                onClick={(e) => toggleTodo({ variables: { id: todo.id } })}
+                onClick={async () => {
+                  await toggleTodo({ variables: { id: todo.id } })
+                  await refetch()
+                }}
               >
                 <Checkbox checked={todo.done} readOnly></Checkbox>
                 <span>{todo.text}</span>
