@@ -42,8 +42,8 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({ context }) => {
-    console.log({ clientContext: context.clientContext })
+  context: ({ event, context }) => {
+    console.log({ event, clientContext: context.clientContext })
     const jwt = context.clientContext.user
     if (jwt) {
       console.log({ jwt })
