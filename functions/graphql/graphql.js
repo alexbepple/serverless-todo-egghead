@@ -1,4 +1,5 @@
 const { ApolloServer, gql } = require('apollo-server-lambda')
+const jwt = require('jsonwebtoken')
 
 const typeDefs = gql`
   type Query {
@@ -39,15 +40,28 @@ const resolvers = {
   },
 }
 
+const getUser = (token) => {
+  try {
+    if (token) {
+      return jwt.decode(token)
+    }
+    return null
+  } catch (err) {
+    return null
+  }
+}
+
 const server = new ApolloServer({
   typeDefs,
   resolvers,
-  context: ({ event, context }) => {
-    console.log({ event, clientContext: context.clientContext })
-    const jwt = context.clientContext.user
-    if (jwt) {
-      console.log({ jwt })
-      return { user: jwt.sub }
+  context: ({ event }) => {
+    const tokenWithBearer = event.headers.authorization || ''
+    const token = tokenWithBearer.split(' ')[1]
+    const user = getUser(token)
+
+    if (user) {
+      console.log({ user })
+      return { userId: user.sub }
     } else {
       return {}
     }
