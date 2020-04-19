@@ -20,12 +20,9 @@ let todoIndex = 0
 
 const resolvers = {
   Query: {
-    todos: (parent, args, { user }) => {
-      if (user) {
-        return Object.values(todoById)
-      } else {
-        return []
-      }
+    todos: (parent, args, context) => {
+      console.log({ context })
+      return Object.values(todoById)
     },
   },
   Mutation: {
@@ -46,6 +43,7 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: ({ context }) => {
+    console.log({ context })
     const jwt = context.clientContext.user
     if (jwt) {
       console.log({ jwt })
