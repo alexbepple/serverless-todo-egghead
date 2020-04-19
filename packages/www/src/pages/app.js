@@ -62,7 +62,7 @@ const ToDoList = () => {
                 key={todo.id}
                 onClick={(e) => toggleTodo({ variables: { id: todo.id } })}
               >
-                <Checkbox checked={todo.done}></Checkbox>
+                <Checkbox checked={todo.done} readOnly></Checkbox>
                 <span>{todo.text}</span>
               </Flex>
             ))}
