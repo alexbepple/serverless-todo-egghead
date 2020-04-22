@@ -1,5 +1,10 @@
 const { ApolloServer, gql } = require('apollo-server-lambda')
 const jwt = require('jsonwebtoken')
+const faunadb = require('faunadb')
+const q = faunadb.query
+
+const client = new faunadb.Client({ secret: process.env.FAUNA })
+const todos = q.Collection('todos')
 
 const typeDefs = gql`
   type Query {
@@ -16,25 +21,49 @@ const typeDefs = gql`
   }
 `
 
-const todoById = {}
-let todoIndex = 0
-
 const resolvers = {
   Query: {
-    todos: (parent, args, context) => {
-      return Object.values(todoById)
+    todos: async (parent, args, context) => {
+      const { userId } = context
+      if (userId) {
+        const results = await client.query(
+          q.Paginate(q.Match(q.Index('todos_by_user'), userId))
+        )
+        return results.data.map(([ref, text, done]) => ({
+          id: ref.id,
+          text,
+          done,
+        }))
+      }
+      return []
     },
   },
   Mutation: {
-    addTodo: (_, { text }) => {
-      todoIndex++
-      const id = `key-${todoIndex}`
-      todoById[id] = { id, text, done: false }
-      return todoById[id]
+    addTodo: async (_, { text }, { userId }) => {
+      if (!userId) {
+        throw new Error('Must be authenticated to create todos')
+      }
+      const result = await client.query(
+        q.Create(todos, {
+          data: {
+            text,
+            done: false,
+            owner: userId,
+          },
+        })
+      )
+      return { ...result, id: result.ref.id }
     },
-    toggleTodoDone: (_, { id }) => {
-      todoById[id].done = !todoById[id].done
-      return todoById[id]
+    toggleTodoDone: async (_, { id }, { userId }) => {
+      if (!userId) {
+        throw new Error('Must be authenticated to toggle todos')
+      }
+      const result = await client.query(
+        q.Update(q.Ref(todos, id), {
+          data: { done: true },
+        })
+      )
+      return { ...result, id: result.ref.id }
     },
   },
 }
