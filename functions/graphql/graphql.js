@@ -52,7 +52,7 @@ const resolvers = {
           },
         })
       )
-      return { ...result, id: result.ref.id }
+      return { ...result.data, id: result.ref.id }
     },
     toggleTodoDone: async (_, { id }, { userId }) => {
       if (!userId) {
@@ -63,7 +63,7 @@ const resolvers = {
           data: { done: true },
         })
       )
-      return { ...result, id: result.ref.id }
+      return { ...result.data, id: result.ref.id }
     },
   },
 }
